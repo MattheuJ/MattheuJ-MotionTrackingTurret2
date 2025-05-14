@@ -139,7 +139,11 @@ class BlackGUI:
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
         self.video_frame.place(relx=0.5, rely=0.5, anchor="center")
         self.video_label = ttk.Label(self.video_frame)
-        self.video_label.pack()
+        self.video_label.pack(padx=10, pady=10)
+        
+        # Set a fixed size for the video frame
+        self.video_frame.configure(width=640, height=480)
+        self.video_label.configure(width=640, height=480)
         
         # Bind Enter key to check for ACTIVATE/DEACTIVATE
         self.text_entry.bind('<Return>', self.check_activation)
@@ -276,6 +280,8 @@ class BlackGUI:
 
     def update_video_label(self, frame):
         # This runs in the main thread
+        # Resize frame to match the video label size
+        frame = cv2.resize(frame, (640, 480))
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
         self.video_label.configure(image=photo)
