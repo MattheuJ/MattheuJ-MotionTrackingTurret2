@@ -18,7 +18,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from picamera2 import Picamera2
+import pygame  # Add pygame for audio playback
 
+# Initialize pygame mixer
+pygame.mixer.init()
 
 now = datetime.datetime.now()
 date = now.strftime("%Y-%m-%d")
@@ -168,6 +171,10 @@ class BlackGUI:
         self.video_label.pack(padx=10, pady=10, fill="both", expand=True)
         
         self.picam2 = None
+        
+        # Load alarm sound
+        self.alarm_sound = pygame.mixer.Sound("Alarm Sound Effect.mp3")
+        self.is_playing_alarm = False
     
     def calculate_distance(self, face_width_pixels):
         # Using the formula: distance = (known_face_width * focal_length) / face_width_pixels
@@ -245,6 +252,10 @@ class BlackGUI:
                         if elapsed_time >= self.threat_duration:
                             self.threat_detected = False
                             self.threat_start_time = None
+                            # Stop alarm when threat is over
+                            if self.is_playing_alarm:
+                                pygame.mixer.stop()
+                                self.is_playing_alarm = False
                     
                     # Draw rectangle around faces and show distance
                     for (x, y, w, h) in faces:
@@ -254,6 +265,10 @@ class BlackGUI:
                             self.threat_detected = True
                             self.threat_start_time = time.time()
                             self.send_threat_email()
+                            # Play alarm sound when threat is detected
+                            if not self.is_playing_alarm:
+                                self.alarm_sound.play(-1)  # -1 means loop indefinitely
+                                self.is_playing_alarm = True
                         
                         box_color = (0, 0, 255) if self.threat_detected else (0, 255, 0)
                         text_color = (0, 0, 255) if self.threat_detected else (0, 255, 0)
@@ -298,6 +313,10 @@ class BlackGUI:
             if self.picam2 is not None:
                 self.picam2.close()
                 self.picam2 = None
+            # Stop any playing alarm
+            if self.is_playing_alarm:
+                pygame.mixer.stop()
+                self.is_playing_alarm = False
     
     def stop_face_detection(self):
         self.is_detecting = False
@@ -308,6 +327,10 @@ class BlackGUI:
         if self.detection_thread is not None and self.detection_thread.is_alive():
             self.detection_thread.join(timeout=1.0)
         self.video_label.configure(image='')
+        # Stop any playing alarm
+        if self.is_playing_alarm:
+            pygame.mixer.stop()
+            self.is_playing_alarm = False
     
     def keep_focus(self):
         """Keep focus on the text entry widget"""
