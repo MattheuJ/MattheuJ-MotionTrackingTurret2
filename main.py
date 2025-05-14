@@ -200,10 +200,10 @@ class BlackGUI:
                     # Detect faces with adjusted parameters
                     faces = self.face_cascade.detectMultiScale(
                         gray,
-                        scaleFactor=1.15,    # Decreased from 1.2 to be more sensitive
-                        minNeighbors=4,      # Decreased from 6 to detect more faces
-                        minSize=(40, 40),    # Decreased from 50 to detect smaller faces
-                        maxSize=(300, 300),  # Kept maximum face size
+                        scaleFactor=1.1,     # Decreased from 1.15 to be even more sensitive
+                        minNeighbors=3,      # Decreased from 4 to detect more faces
+                        minSize=(30, 30),    # Decreased from 40 to detect smaller faces
+                        maxSize=(400, 400),  # Increased maximum face size
                         flags=cv2.CASCADE_SCALE_IMAGE
                     )
                     
@@ -212,7 +212,7 @@ class BlackGUI:
                     for (x, y, w, h) in faces:
                         # Check if the face has reasonable proportions (width/height ratio)
                         aspect_ratio = w / float(h)
-                        if 0.4 < aspect_ratio < 2.2:  # Slightly wider range for aspect ratio
+                        if 0.3 < aspect_ratio < 2.5:  # Much wider range for aspect ratio
                             filtered_faces.append((x, y, w, h))
                     
                     faces = filtered_faces
