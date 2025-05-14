@@ -312,20 +312,20 @@ class BlackGUI:
     def send_threat_email(self):
         try:
             # Email configuration for Gmail
-            sender_email = "S_mattheu.jimenez@OUSD.org"  # Your Gmail address
+            sender_email = "mattheujimenez@gmail.com"  # Your Gmail address
             receiver_email = "mattheujimenez@gmail.com"  # Where to send the alert
-            password = "Watermelon89"  # You'll need to generate an App Password from Google Account settings
+            password = "jtpf qrei viiy ccmu"  # Replace with your Gmail App Password
 
             # Create message
             msg = MIMEMultipart()
             msg["From"] = sender_email
             msg["To"] = receiver_email
-            msg["Subject"] = "🚨 THREAT DETECTED - Motion Tracking System Alert"
+            msg["Subject"] = "THREAT DETECTED - Motion Tracking System Alert"
 
             # Create email body with timestamp
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             body = f"""
-            ⚠️ THREAT ALERT ⚠️
+            THREAT ALERT
 
             A potential threat has been detected by your Motion Tracking System.
 
