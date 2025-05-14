@@ -310,26 +310,46 @@ class BlackGUI:
             self.text_entry.delete(0, tk.END)  # Clear the entry field
 
     def send_threat_email(self):
-        sender_email = "MattheuPi@programmer.net"
-        receiver_email = "mattheujimenez@gmail.com"  # or any email you want to notify
-        password = "4h#qzwZHTx*P!MS"  # Use an app password if 2FA is enabled
-
-        subject = "Threat Detected Alert"
-        body = "A threat has been detected by your Motion Tracking Software."
-
-        msg = MIMEMultipart()
-        msg["From"] = sender_email
-        msg["To"] = receiver_email
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "plain"))
-
         try:
+            # Email configuration for Gmail
+            sender_email = "S_mattheu.jimenez@OUSD.org"  # Your Gmail address
+            receiver_email = "mattheujimenez@gmail.com"  # Where to send the alert
+            password = "Watermelon89"  # You'll need to generate an App Password from Google Account settings
+
+            # Create message
+            msg = MIMEMultipart()
+            msg["From"] = sender_email
+            msg["To"] = receiver_email
+            msg["Subject"] = "🚨 THREAT DETECTED - Motion Tracking System Alert"
+
+            # Create email body with timestamp
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            body = f"""
+            ⚠️ THREAT ALERT ⚠️
+
+            A potential threat has been detected by your Motion Tracking System.
+
+            Details:
+            - Time: {current_time}
+            - Location: Motion Tracking System
+            - Status: Active Threat
+
+            Please check your system immediately.
+
+            This is an automated message from your Motion Tracking System.
+            """
+
+            msg.attach(MIMEText(body, "plain"))
+
+            # Connect to Gmail's SMTP server
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
                 server.login(sender_email, password)
                 server.sendmail(sender_email, receiver_email, msg.as_string())
-            print("Threat alert email sent!")
+                print("Threat alert email sent successfully!")
+                
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            print(f"Failed to send threat alert email: {str(e)}")
+            # You might want to add additional error handling here
 
     def update_video_label(self, frame):
         try:
