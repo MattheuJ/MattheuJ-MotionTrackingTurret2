@@ -13,7 +13,6 @@ import threading
 from PIL import Image, ImageTk
 import numpy as np
 from picamera2 import Picamera2
-from picamera2.previews import Preview
 
 now = datetime.datetime.now()
 date = now.strftime("%Y-%m-%d")
