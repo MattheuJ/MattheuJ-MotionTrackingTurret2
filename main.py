@@ -136,6 +136,18 @@ class BlackGUI:
                                  width=20)
         self.text_entry.pack(side="left")
         
+        # Set focus to the text entry
+        self.text_entry.focus_set()
+        
+        # Bind Enter key to check for ACTIVATE/DEACTIVATE
+        self.text_entry.bind('<Return>', self.check_activation)
+        
+        # Add a submit button
+        submit_button = ttk.Button(entry_frame,
+                                 text="Submit",
+                                 command=lambda: self.check_activation(None))
+        submit_button.pack(side="left", padx=10)
+        
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
         self.video_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
@@ -143,9 +155,6 @@ class BlackGUI:
         # Create and configure video label
         self.video_label = tk.Label(self.video_frame, bg="black", width=80, height=30)  # Set size in text units
         self.video_label.pack(padx=10, pady=10, fill="both", expand=True)
-        
-        # Bind Enter key to check for ACTIVATE/DEACTIVATE
-        self.text_entry.bind('<Return>', self.check_activation)
         
         self.picam2 = None
     
