@@ -18,7 +18,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from picamera2 import Picamera2
-import pygame  # Add pygame for audio playback
 
 
 now = datetime.datetime.now()
@@ -28,9 +27,6 @@ class BlackGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Motion Tracking Software")
-        
-        # Initialize pygame mixer for audio
-        pygame.mixer.init()
         
         # Set window size and position
         window_width = 800
@@ -332,13 +328,6 @@ class BlackGUI:
 
     def send_threat_email(self):
         try:
-            # Play alert sound
-            try:
-                pygame.mixer.music.load("Alarm Sound Effect.mp3")  # Make sure to place your MP3 file in the same directory
-                pygame.mixer.music.play()
-            except Exception as e:
-                print(f"Failed to play alert sound: {str(e)}")
-            
             # Email configuration for Gmail
             sender_email = "mattheujimenez@gmail.com"  # Your Gmail address
             receiver_email = "mattheujimenez@gmail.com"  # Where to send the alert
