@@ -138,12 +138,10 @@ class BlackGUI:
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
         self.video_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
-        self.video_label = tk.Label(self.video_frame, bg="black")
-        self.video_label.pack(padx=10, pady=10)
         
-        # Set a fixed size for the video frame
-        self.video_frame.configure(width=640, height=480)
-        self.video_label.configure(width=640, height=480)
+        # Create and configure video label
+        self.video_label = tk.Label(self.video_frame, bg="black", width=80, height=30)  # Set size in text units
+        self.video_label.pack(padx=10, pady=10, fill="both", expand=True)
         
         # Bind Enter key to check for ACTIVATE/DEACTIVATE
         self.text_entry.bind('<Return>', self.check_activation)
@@ -301,13 +299,26 @@ class BlackGUI:
             print(f"Failed to send email: {e}")
 
     def update_video_label(self, frame):
-        # This runs in the main thread
-        # Resize frame to match the video label size
-        frame = cv2.resize(frame, (640, 480))
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
-        self.video_label.configure(image=photo)
-        self.video_label.image = photo
+        try:
+            # This runs in the main thread
+            # Resize frame to match the video label size
+            frame = cv2.resize(frame, (640, 480))
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            
+            # Convert to PhotoImage
+            image = Image.fromarray(frame)
+            photo = ImageTk.PhotoImage(image=image)
+            
+            # Update the label
+            self.video_label.configure(image=photo)
+            self.video_label.image = photo  # Keep a reference!
+            
+            # Force update
+            self.video_label.update()
+            print("Frame updated in GUI")  # Debug print
+            
+        except Exception as e:
+            print(f"Error updating video label: {str(e)}")  # Debug print
 
 def main():
     root = tk.Tk()
