@@ -168,7 +168,7 @@ class BlackGUI:
                     frame = self.picam2.capture_array()
                     
                     # Convert to grayscale for face detection
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
                     faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
                     
                     # Check if threat timer has expired
