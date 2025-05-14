@@ -29,8 +29,7 @@ class BlackGUI:
         self.root = root
         self.root.title("Motion Tracking Software")
         
-        # Initialize pygame mixer for audio with specific settings
-        pygame.mixer.pre_init(44100, -16, 2, 2048)
+        # Initialize pygame mixer for audio
         pygame.mixer.init()
         
         # Set window size and position
