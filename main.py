@@ -170,6 +170,7 @@ class BlackGUI:
 
             self.is_detecting = True
             print("Starting detection loop...")  # Debug print
+            print("Frame captured successfully")  # Moved here to only print once
             
             while self.is_detecting:
                 try:
@@ -179,8 +180,6 @@ class BlackGUI:
                         print("Failed to capture frame")  # Debug print
                         continue
                         
-                    print("Frame captured successfully")  # Debug print
-                    
                     # Resize frame for processing while maintaining aspect ratio
                     height, width = frame.shape[:2]
                     scale = min(640/width, 480/height)
