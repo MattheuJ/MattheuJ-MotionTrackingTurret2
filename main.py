@@ -17,6 +17,7 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from picamera2 import Picamera2
 
 
 now = datetime.datetime.now()
@@ -155,12 +156,12 @@ class BlackGUI:
         
     def start_face_detection(self):
         try:
-            print("Initializing camera...")  # Debug print
-            # Initialize camera using OpenCV
-            self.cap = cv2.VideoCapture(0)  # Use default camera
-            if not self.cap.isOpened():
-                raise Exception("Failed to open camera")
-                
+            print("Initializing Raspberry Pi Camera...")  # Debug print
+            # Initialize Pi Camera
+            self.picam2 = Picamera2()
+            config = self.picam2.create_preview_configuration(main={"format": "RGB888", "size": (640, 480)})
+            self.picam2.configure(config)
+            self.picam2.start()
             print("Camera started successfully")  # Debug print
             time.sleep(2)  # Camera warm-up
 
@@ -169,16 +170,16 @@ class BlackGUI:
             
             while self.is_detecting:
                 try:
-                    # Capture frame from camera
-                    ret, frame = self.cap.read()
-                    if not ret:
+                    # Capture frame from Pi Camera
+                    frame = self.picam2.capture_array()
+                    if frame is None:
                         print("Failed to capture frame")  # Debug print
                         continue
                         
                     print("Frame captured successfully")  # Debug print
                     
                     # Convert to grayscale for face detection
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
                     faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
                     
                     # Check if threat timer has expired
@@ -233,15 +234,15 @@ class BlackGUI:
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
             self.is_detecting = False
         finally:
-            if self.cap is not None:
-                self.cap.release()
-                self.cap = None
+            if self.picam2 is not None:
+                self.picam2.close()
+                self.picam2 = None
     
     def stop_face_detection(self):
         self.is_detecting = False
-        if self.cap is not None:
-            self.cap.release()
-            self.cap = None
+        if self.picam2 is not None:
+            self.picam2.close()
+            self.picam2 = None
         if self.detection_thread is not None and self.detection_thread.is_alive():
             self.detection_thread.join(timeout=1.0)
         self.video_label.configure(image='')
