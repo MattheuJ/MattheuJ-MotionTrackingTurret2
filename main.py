@@ -37,7 +37,20 @@ class BlackGUI:
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
         # Initialize face detection variables
-        cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        # Try common locations for the haarcascade file
+        possible_paths = [
+            "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+            "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml",
+            "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+            "haarcascade_frontalface_default.xml",  # In current directory
+        ]
+        cascade_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                cascade_path = path
+                break
+        if cascade_path is None:
+            raise FileNotFoundError("Could not find haarcascade_frontalface_default.xml")
         self.face_cascade = cv2.CascadeClassifier(cascade_path)
         self.cap = None
         self.is_detecting = False
