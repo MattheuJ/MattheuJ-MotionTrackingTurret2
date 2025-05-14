@@ -128,25 +128,36 @@ class BlackGUI:
         entry_frame = ttk.Frame(self.text_frame, style="Black.TFrame")
         entry_frame.pack(pady=20, anchor="w")
         
+        # Create a StringVar to track the entry's value
+        self.entry_var = tk.StringVar()
+        
+        # Create the entry widget with the StringVar
         self.text_entry = tk.Entry(entry_frame,
+                                 textvariable=self.entry_var,
                                  font=("Courier", 40),
                                  bg="black",
                                  fg="white",
                                  insertbackground="white",  # Cursor color
-                                 width=20)
+                                 width=20,
+                                 exportselection=0)  # Prevent text selection from being exported
         self.text_entry.pack(side="left")
-        
-        # Set focus to the text entry
-        self.text_entry.focus_set()
-        
-        # Bind Enter key to check for ACTIVATE/DEACTIVATE
-        self.text_entry.bind('<Return>', self.check_activation)
         
         # Add a submit button
         submit_button = ttk.Button(entry_frame,
                                  text="Submit",
                                  command=lambda: self.check_activation(None))
         submit_button.pack(side="left", padx=10)
+        
+        # Bind Enter key to check for ACTIVATE/DEACTIVATE
+        self.text_entry.bind('<Return>', self.check_activation)
+        
+        # Set focus to the text entry and ensure it stays focused
+        self.text_entry.focus_set()
+        self.root.after(100, self.keep_focus)
+        
+        # Bind focus events
+        self.text_entry.bind('<FocusIn>', lambda e: print("Entry gained focus"))
+        self.text_entry.bind('<FocusOut>', lambda e: print("Entry lost focus"))
         
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
@@ -179,7 +190,10 @@ class BlackGUI:
 
             self.is_detecting = True
             print("Starting detection loop...")  # Debug print
-            print("Frame captured successfully")  # Moved here to only print once
+            
+            # Create named window and set properties
+            cv2.namedWindow("Motion Tracking System", cv2.WINDOW_NORMAL)
+            cv2.setWindowProperty("Motion Tracking System", cv2.WND_PROP_TOPMOST, 0)
             
             while self.is_detecting:
                 try:
@@ -209,19 +223,18 @@ class BlackGUI:
                     # Detect faces with adjusted parameters
                     faces = self.face_cascade.detectMultiScale(
                         gray,
-                        scaleFactor=1.1,     # Decreased from 1.15 to be even more sensitive
-                        minNeighbors=3,      # Decreased from 4 to detect more faces
-                        minSize=(30, 30),    # Decreased from 40 to detect smaller faces
-                        maxSize=(400, 400),  # Increased maximum face size
+                        scaleFactor=1.1,
+                        minNeighbors=3,
+                        minSize=(30, 30),
+                        maxSize=(400, 400),
                         flags=cv2.CASCADE_SCALE_IMAGE
                     )
                     
                     # Filter out false positives by checking face proportions
                     filtered_faces = []
                     for (x, y, w, h) in faces:
-                        # Check if the face has reasonable proportions (width/height ratio)
                         aspect_ratio = w / float(h)
-                        if 0.3 < aspect_ratio < 2.5:  # Much wider range for aspect ratio
+                        if 0.3 < aspect_ratio < 2.5:
                             filtered_faces.append((x, y, w, h))
                     
                     faces = filtered_faces
@@ -235,31 +248,24 @@ class BlackGUI:
                     
                     # Draw rectangle around faces and show distance
                     for (x, y, w, h) in faces:
-                        # Calculate distance
                         distance = self.calculate_distance(w)
                         
-                        # Update threat status
                         if distance < 1.0 and not self.threat_detected:
                             self.threat_detected = True
                             self.threat_start_time = time.time()
-                            self.send_threat_email()  # Send email alert
+                            self.send_threat_email()
                         
-                        # Set color based on threat status
                         box_color = (0, 0, 255) if self.threat_detected else (0, 255, 0)
                         text_color = (0, 0, 255) if self.threat_detected else (0, 255, 0)
                         
-                        # Draw rectangle with thicker lines
                         cv2.rectangle(frame, (x, y), (x+w, y+h), box_color, 3)
                         
-                        # Add distance text with improved visibility
                         distance_text = f"Distance: {distance:.2f}m"
                         cv2.putText(frame, distance_text, (x, y-10),
                                   cv2.FONT_HERSHEY_SIMPLEX, 1.0, text_color, 2)
                         
-                        # Add threat warning if threat is detected
                         if self.threat_detected:
                             threat_text = "THREAT DETECTED"
-                            # Get text size for centering
                             text_size = cv2.getTextSize(threat_text, cv2.FONT_HERSHEY_SIMPLEX, 2, 3)[0]
                             text_x = (frame.shape[1] - text_size[0]) // 2
                             cv2.putText(frame, threat_text, (text_x, 50),
@@ -268,18 +274,22 @@ class BlackGUI:
                     # Display the frame using OpenCV
                     cv2.imshow("Motion Tracking System", frame)
                     
+                    # Force focus back to Tkinter window
+                    self.root.focus_force()
+                    self.text_entry.focus_set()
+                    
                     # Check for 'q' key press to quit
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         self.is_detecting = False
                         break
                     
                 except Exception as e:
-                    print(f"Error in capture loop: {str(e)}")  # Debug print
+                    print(f"Error in capture loop: {str(e)}")
                     time.sleep(0.1)
                     continue
                     
         except Exception as e:
-            print(f"Camera initialization error: {str(e)}")  # Debug print
+            print(f"Camera initialization error: {str(e)}")
             messagebox.showerror("Camera Error", f"Failed to initialize camera: {str(e)}")
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
             self.is_detecting = False
@@ -299,14 +309,19 @@ class BlackGUI:
             self.detection_thread.join(timeout=1.0)
         self.video_label.configure(image='')
     
+    def keep_focus(self):
+        """Keep focus on the text entry widget"""
+        self.text_entry.focus_set()
+        self.root.after(100, self.keep_focus)
+        
     def check_activation(self, event):
-        command = self.text_entry.get().upper()
+        command = self.entry_var.get().upper()
         print(f"Received command: {command}")  # Debug print
         
         if command == "ACTIVATE":
             print("Activating system...")  # Debug print
             self.status_indicator.configure(text="ONLINE", style="Green.TLabel")
-            self.text_entry.delete(0, tk.END)  # Clear the entry field
+            self.entry_var.set("")  # Clear the entry field
             
             # Start face detection in a separate thread
             if self.detection_thread is None or not self.detection_thread.is_alive():
@@ -320,7 +335,7 @@ class BlackGUI:
         elif command == "DEACTIVATE":
             print("Deactivating system and shutting down...")  # Debug print
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
-            self.text_entry.delete(0, tk.END)  # Clear the entry field
+            self.entry_var.set("")  # Clear the entry field
             self.stop_face_detection()
             # Clean up and exit
             cv2.destroyAllWindows()
@@ -329,7 +344,7 @@ class BlackGUI:
             os._exit(0)  # Force exit the program
         else:
             print(f"Unknown command: {command}")  # Debug print
-            self.text_entry.delete(0, tk.END)  # Clear the entry field
+            self.entry_var.set("")  # Clear the entry field
 
     def send_threat_email(self):
         try:
