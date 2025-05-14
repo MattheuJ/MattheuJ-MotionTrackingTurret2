@@ -128,16 +128,12 @@ class BlackGUI:
         entry_frame = ttk.Frame(self.text_frame, style="Black.TFrame")
         entry_frame.pack(pady=20, anchor="w")
         
-        # Create a StringVar to track the entry text
-        self.entry_text = tk.StringVar()
-        
         self.text_entry = tk.Entry(entry_frame,
                                  font=("Courier", 40),
                                  bg="black",
                                  fg="white",
                                  insertbackground="white",  # Cursor color
-                                 width=20,
-                                 textvariable=self.entry_text)  # Use StringVar
+                                 width=20)
         self.text_entry.pack(side="left")
         
         # Create video frame
@@ -150,10 +146,6 @@ class BlackGUI:
         
         # Bind Enter key to check for ACTIVATE/DEACTIVATE
         self.text_entry.bind('<Return>', self.check_activation)
-        
-        # Make sure the text entry is enabled and focused
-        self.text_entry.config(state='normal')
-        self.text_entry.focus_set()
         
         self.picam2 = None
     
@@ -299,13 +291,13 @@ class BlackGUI:
         self.video_label.configure(image='')
     
     def check_activation(self, event):
-        command = self.entry_text.get().upper()  # Get text from StringVar
+        command = self.text_entry.get().upper()
         print(f"Received command: {command}")  # Debug print
         
         if command == "ACTIVATE":
             print("Activating system...")  # Debug print
             self.status_indicator.configure(text="ONLINE", style="Green.TLabel")
-            self.entry_text.set("")  # Clear the entry field
+            self.text_entry.delete(0, tk.END)  # Clear the entry field
             
             # Start face detection in a separate thread
             if self.detection_thread is None or not self.detection_thread.is_alive():
@@ -319,7 +311,7 @@ class BlackGUI:
         elif command == "DEACTIVATE":
             print("Deactivating system and shutting down...")  # Debug print
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
-            self.entry_text.set("")  # Clear the entry field
+            self.text_entry.delete(0, tk.END)  # Clear the entry field
             self.stop_face_detection()
             # Clean up and exit
             cv2.destroyAllWindows()
@@ -328,7 +320,7 @@ class BlackGUI:
             os._exit(0)  # Force exit the program
         else:
             print(f"Unknown command: {command}")  # Debug print
-            self.entry_text.set("")  # Clear the entry field
+            self.text_entry.delete(0, tk.END)  # Clear the entry field
 
     def send_threat_email(self):
         try:
@@ -393,11 +385,6 @@ class BlackGUI:
             
         except Exception as e:
             print(f"Error updating video label: {str(e)}")  # Debug print
-
-    def keep_focus(self):
-        """Keep focus on the text entry widget"""
-        self.text_entry.focus()
-        self.root.after(100, self.keep_focus)
 
 def main():
     root = tk.Tk()
