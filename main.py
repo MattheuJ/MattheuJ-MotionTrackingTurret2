@@ -92,7 +92,7 @@ class BlackGUI:
         
         # Create text frame for sentences
         self.text_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
-        self.text_frame.place(relx=0, rely=0, anchor="nw")
+        self.text_frame.pack(side="left", fill="y", padx=20, pady=20)
         
         # Random sentences
         sentences = [
@@ -137,7 +137,7 @@ class BlackGUI:
         
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
-        self.video_frame.place(relx=0.5, rely=0.5, anchor="center")
+        self.video_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
         self.video_label = tk.Label(self.video_frame, bg="black")
         self.video_label.pack(padx=10, pady=10)
         
