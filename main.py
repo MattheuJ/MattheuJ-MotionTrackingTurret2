@@ -29,9 +29,9 @@ class BlackGUI:
         self.root = root
         self.root.title("Motion Tracking Software")
         
-        # Initialize pygame mixer for audio
+        # Initialize pygame mixer for audio with specific settings
+        pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
-        pygame.mixer.set_num_channels(1)  # Use only one channel for audio
         
         # Set window size and position
         window_width = 800
@@ -140,7 +140,24 @@ class BlackGUI:
                                  insertbackground="white",  # Cursor color
                                  width=20)
         self.text_entry.pack(side="left")
-        self.text_entry.focus_set()  # Set focus to the entry widget
+        
+        # Make sure the entry widget is properly configured
+        self.text_entry.config(state='normal')
+        self.text_entry.delete(0, tk.END)
+        self.text_entry.focus_force()
+        
+        # Bind Enter key to check for ACTIVATE/DEACTIVATE
+        self.text_entry.bind('<Return>', self.check_activation)
+        self.root.bind('<Return>', self.check_activation)  # Bind to root window as well
+        
+        # Add a button to activate/deactivate as an alternative
+        self.activate_button = tk.Button(entry_frame,
+                                      text="Activate/Deactivate",
+                                      command=lambda: self.check_activation(None),
+                                      bg="black",
+                                      fg="white",
+                                      font=("Courier", 20))
+        self.activate_button.pack(side="left", padx=10)
         
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
@@ -149,10 +166,6 @@ class BlackGUI:
         # Create and configure video label
         self.video_label = tk.Label(self.video_frame, bg="black", width=80, height=30)  # Set size in text units
         self.video_label.pack(padx=10, pady=10, fill="both", expand=True)
-        
-        # Bind Enter key to check for ACTIVATE/DEACTIVATE
-        self.text_entry.bind('<Return>', self.check_activation)
-        self.root.bind('<Return>', self.check_activation)  # Bind to root window as well
         
         self.picam2 = None
     
