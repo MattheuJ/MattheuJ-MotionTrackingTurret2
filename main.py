@@ -309,12 +309,15 @@ class BlackGUI:
                 print("Detection thread already running")  # Debug print
                 
         elif command == "DEACTIVATE":
-            print("Deactivating system...")  # Debug print
+            print("Deactivating system and shutting down...")  # Debug print
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
             self.text_entry.delete(0, tk.END)  # Clear the entry field
             self.stop_face_detection()
-            # Reset the video frame
-            self.video_label.configure(image='')
+            # Clean up and exit
+            cv2.destroyAllWindows()
+            self.root.quit()
+            self.root.destroy()
+            os._exit(0)  # Force exit the program
         else:
             print(f"Unknown command: {command}")  # Debug print
             self.text_entry.delete(0, tk.END)  # Clear the entry field
