@@ -138,7 +138,7 @@ class BlackGUI:
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
         self.video_frame.place(relx=0.5, rely=0.5, anchor="center")
-        self.video_label = ttk.Label(self.video_frame)
+        self.video_label = tk.Label(self.video_frame, bg="black")
         self.video_label.pack(padx=10, pady=10)
         
         # Set a fixed size for the video frame
