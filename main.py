@@ -200,11 +200,22 @@ class BlackGUI:
                     # Detect faces with adjusted parameters
                     faces = self.face_cascade.detectMultiScale(
                         gray,
-                        scaleFactor=1.1,  # Reduced from 1.3 for more precise detection
-                        minNeighbors=4,   # Increased from 5 for better accuracy
-                        minSize=(30, 30), # Minimum face size
-                        maxSize=(300, 300) # Maximum face size
+                        scaleFactor=1.2,     # Increased from 1.1 to reduce sensitivity
+                        minNeighbors=6,      # Increased from 4 to require more confirmation
+                        minSize=(50, 50),    # Increased minimum face size
+                        maxSize=(300, 300),  # Kept maximum face size
+                        flags=cv2.CASCADE_SCALE_IMAGE
                     )
+                    
+                    # Filter out false positives by checking face proportions
+                    filtered_faces = []
+                    for (x, y, w, h) in faces:
+                        # Check if the face has reasonable proportions (width/height ratio)
+                        aspect_ratio = w / float(h)
+                        if 0.5 < aspect_ratio < 2.0:  # Typical face aspect ratio range
+                            filtered_faces.append((x, y, w, h))
+                    
+                    faces = filtered_faces
                     
                     # Check if threat timer has expired
                     if self.threat_detected and self.threat_start_time is not None:
