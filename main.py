@@ -157,9 +157,12 @@ class BlackGUI:
     def start_face_detection(self):
         try:
             print("Initializing Raspberry Pi Camera...")  # Debug print
-            # Initialize Pi Camera
+            # Initialize Pi Camera with higher resolution
             self.picam2 = Picamera2()
-            config = self.picam2.create_preview_configuration(main={"format": "RGB888"})
+            config = self.picam2.create_preview_configuration(
+                main={"format": "RGB888", "size": (1920, 1080)},
+                lores={"format": "YUV420", "size": (640, 480)}
+            )
             self.picam2.configure(config)
             self.picam2.start()
             print("Camera started successfully")  # Debug print
@@ -178,9 +181,31 @@ class BlackGUI:
                         
                     print("Frame captured successfully")  # Debug print
                     
-                    # Convert to grayscale for face detection
+                    # Resize frame for processing while maintaining aspect ratio
+                    height, width = frame.shape[:2]
+                    scale = min(640/width, 480/height)
+                    new_width = int(width * scale)
+                    new_height = int(height * scale)
+                    frame = cv2.resize(frame, (new_width, new_height))
+                    
+                    # Apply image preprocessing
+                    # Convert to grayscale
                     gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-                    faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+                    
+                    # Apply histogram equalization to improve contrast
+                    gray = cv2.equalizeHist(gray)
+                    
+                    # Apply slight Gaussian blur to reduce noise
+                    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+                    
+                    # Detect faces with adjusted parameters
+                    faces = self.face_cascade.detectMultiScale(
+                        gray,
+                        scaleFactor=1.1,  # Reduced from 1.3 for more precise detection
+                        minNeighbors=4,   # Increased from 5 for better accuracy
+                        minSize=(30, 30), # Minimum face size
+                        maxSize=(300, 300) # Maximum face size
+                    )
                     
                     # Check if threat timer has expired
                     if self.threat_detected and self.threat_start_time is not None:
@@ -204,13 +229,13 @@ class BlackGUI:
                         box_color = (0, 0, 255) if self.threat_detected else (0, 255, 0)
                         text_color = (0, 0, 255) if self.threat_detected else (0, 255, 0)
                         
-                        # Draw rectangle
-                        cv2.rectangle(frame, (x, y), (x+w, y+h), box_color, 2)
+                        # Draw rectangle with thicker lines
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), box_color, 3)
                         
-                        # Add distance text
+                        # Add distance text with improved visibility
                         distance_text = f"Distance: {distance:.2f}m"
                         cv2.putText(frame, distance_text, (x, y-10),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 1.5, text_color, 3)
+                                  cv2.FONT_HERSHEY_SIMPLEX, 1.0, text_color, 2)
                         
                         # Add threat warning if threat is detected
                         if self.threat_detected:
