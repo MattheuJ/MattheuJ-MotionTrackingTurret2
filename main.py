@@ -159,7 +159,7 @@ class BlackGUI:
             print("Initializing Raspberry Pi Camera...")  # Debug print
             # Initialize Pi Camera
             self.picam2 = Picamera2()
-            config = self.picam2.create_preview_configuration(main={"format": "RGB888", "size": (640, 480)})
+            config = self.picam2.create_preview_configuration(main={"format": "RGB888"})
             self.picam2.configure(config)
             self.picam2.start()
             print("Camera started successfully")  # Debug print
@@ -221,7 +221,13 @@ class BlackGUI:
                             cv2.putText(frame, threat_text, (text_x, 50),
                                       cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
                     
-                    self.root.after(0, self.update_video_label, frame)
+                    # Display the frame using OpenCV
+                    cv2.imshow("Motion Tracking System", frame)
+                    
+                    # Check for 'q' key press to quit
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        self.is_detecting = False
+                        break
                     
                 except Exception as e:
                     print(f"Error in capture loop: {str(e)}")  # Debug print
@@ -234,20 +240,21 @@ class BlackGUI:
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
             self.is_detecting = False
         finally:
+            cv2.destroyAllWindows()
             if self.picam2 is not None:
                 self.picam2.close()
                 self.picam2 = None
     
     def stop_face_detection(self):
         self.is_detecting = False
+        cv2.destroyAllWindows()
         if self.picam2 is not None:
             self.picam2.close()
             self.picam2 = None
         if self.detection_thread is not None and self.detection_thread.is_alive():
             self.detection_thread.join(timeout=1.0)
         self.video_label.configure(image='')
-        cv2.destroyAllWindows()  # Clean up any OpenCV windows
-        
+    
     def check_activation(self, event):
         command = self.text_entry.get().upper()
         print(f"Received command: {command}")  # Debug print
