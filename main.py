@@ -31,6 +31,7 @@ class BlackGUI:
         
         # Initialize pygame mixer for audio
         pygame.mixer.init()
+        pygame.mixer.set_num_channels(1)  # Use only one channel for audio
         
         # Set window size and position
         window_width = 800
@@ -139,6 +140,7 @@ class BlackGUI:
                                  insertbackground="white",  # Cursor color
                                  width=20)
         self.text_entry.pack(side="left")
+        self.text_entry.focus_set()  # Set focus to the entry widget
         
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
@@ -150,6 +152,7 @@ class BlackGUI:
         
         # Bind Enter key to check for ACTIVATE/DEACTIVATE
         self.text_entry.bind('<Return>', self.check_activation)
+        self.root.bind('<Return>', self.check_activation)  # Bind to root window as well
         
         self.picam2 = None
     
