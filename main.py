@@ -157,19 +157,27 @@ class BlackGUI:
         
     def start_face_detection(self):
         try:
+            print("Initializing Pi Camera...")  # Debug print
             # Initialize Pi Camera
             self.picam2 = Picamera2()
             config = self.picam2.create_preview_configuration(main={"format": "RGB888", "size": (640, 480)})
             self.picam2.configure(config)
             self.picam2.start()
+            print("Camera started successfully")  # Debug print
             time.sleep(2)  # Camera warm-up
 
             self.is_detecting = True
+            print("Starting detection loop...")  # Debug print
             
             while self.is_detecting:
                 try:
                     # Capture frame from Pi Camera
                     frame = self.picam2.capture_array()
+                    if frame is None:
+                        print("Failed to capture frame")  # Debug print
+                        continue
+                        
+                    print("Frame captured successfully")  # Debug print
                     
                     # Convert to grayscale for face detection
                     gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -217,11 +225,12 @@ class BlackGUI:
                     self.root.after(0, self.update_video_label, frame)
                     
                 except Exception as e:
-                    print(f"Error in capture loop: {str(e)}")
+                    print(f"Error in capture loop: {str(e)}")  # Debug print
                     time.sleep(0.1)
                     continue
                     
         except Exception as e:
+            print(f"Camera initialization error: {str(e)}")  # Debug print
             messagebox.showerror("Camera Error", f"Failed to initialize camera: {str(e)}")
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
             self.is_detecting = False
@@ -242,19 +251,32 @@ class BlackGUI:
         
     def check_activation(self, event):
         command = self.text_entry.get().upper()
+        print(f"Received command: {command}")  # Debug print
+        
         if command == "ACTIVATE":
+            print("Activating system...")  # Debug print
             self.status_indicator.configure(text="ONLINE", style="Green.TLabel")
             self.text_entry.delete(0, tk.END)  # Clear the entry field
+            
             # Start face detection in a separate thread
-            self.detection_thread = threading.Thread(target=self.start_face_detection)
-            self.detection_thread.daemon = True
-            self.detection_thread.start()
+            if self.detection_thread is None or not self.detection_thread.is_alive():
+                print("Starting detection thread...")  # Debug print
+                self.detection_thread = threading.Thread(target=self.start_face_detection)
+                self.detection_thread.daemon = True
+                self.detection_thread.start()
+            else:
+                print("Detection thread already running")  # Debug print
+                
         elif command == "DEACTIVATE":
+            print("Deactivating system...")  # Debug print
             self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
             self.text_entry.delete(0, tk.END)  # Clear the entry field
             self.stop_face_detection()
             # Reset the video frame
             self.video_label.configure(image='')
+        else:
+            print(f"Unknown command: {command}")  # Debug print
+            self.text_entry.delete(0, tk.END)  # Clear the entry field
 
     def send_threat_email(self):
         sender_email = "MattheuPi@programmer.net"
