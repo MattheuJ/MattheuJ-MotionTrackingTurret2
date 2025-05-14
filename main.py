@@ -139,6 +139,7 @@ class BlackGUI:
                                  insertbackground="white",  # Cursor color
                                  width=20)
         self.text_entry.pack(side="left")
+        self.text_entry.focus()  # Set initial focus
         
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
@@ -150,6 +151,9 @@ class BlackGUI:
         
         # Bind Enter key to check for ACTIVATE/DEACTIVATE
         self.text_entry.bind('<Return>', self.check_activation)
+        
+        # Make sure the text entry stays focused
+        self.root.after(100, self.keep_focus)
         
         self.picam2 = None
     
@@ -396,6 +400,11 @@ class BlackGUI:
             
         except Exception as e:
             print(f"Error updating video label: {str(e)}")  # Debug print
+
+    def keep_focus(self):
+        """Keep focus on the text entry widget"""
+        self.text_entry.focus()
+        self.root.after(100, self.keep_focus)
 
 def main():
     root = tk.Tk()
