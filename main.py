@@ -13,6 +13,7 @@ import threading
 from PIL import Image, ImageTk
 import numpy as np
 from picamera2 import Picamera2
+import os
 
 now = datetime.datetime.now()
 date = now.strftime("%Y-%m-%d")
@@ -32,7 +33,10 @@ class BlackGUI:
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
         # Initialize face detection variables
-        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        cascade_path = "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
+        if not os.path.exists(cascade_path):
+            cascade_path = "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
+        self.face_cascade = cv2.CascadeClassifier(cascade_path)
         self.picam2 = None
         self.is_detecting = False
         self.detection_thread = None
