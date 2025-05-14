@@ -210,16 +210,7 @@ class BlackGUI:
                             cv2.putText(frame, threat_text, (text_x, 50),
                                       cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
                     
-                    # Convert frame to PhotoImage
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
-                    
-                    # Update video label
-                    self.video_label.configure(image=photo)
-                    self.video_label.image = photo
-                    
-                    # Update GUI
-                    self.root.update()
+                    self.root.after(0, self.update_video_label, frame)
                     
                 except Exception as e:
                     print(f"Error in capture loop: {str(e)}")
@@ -282,6 +273,13 @@ class BlackGUI:
             print("Threat alert email sent!")
         except Exception as e:
             print(f"Failed to send email: {e}")
+
+    def update_video_label(self, frame):
+        # This runs in the main thread
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
+        self.video_label.configure(image=photo)
+        self.video_label.image = photo
 
 def main():
     root = tk.Tk()
