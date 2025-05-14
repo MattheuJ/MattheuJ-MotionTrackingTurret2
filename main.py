@@ -6,7 +6,7 @@ A simple application with a black background.
 """
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import datetime
 import cv2
 import threading
@@ -14,6 +14,7 @@ from PIL import Image, ImageTk
 import numpy as np
 from picamera2 import Picamera2
 import os
+import time
 
 now = datetime.datetime.now()
 date = now.strftime("%Y-%m-%d")
@@ -130,47 +131,71 @@ class BlackGUI:
         return distance
         
     def start_face_detection(self):
-        # Initialize Pi Camera
-        self.picam2 = Picamera2()
-        preview_config = self.picam2.create_preview_configuration(main={"size": (640, 480)})
-        self.picam2.configure(preview_config)
-        self.picam2.start()
-        self.is_detecting = True
-        
-        while self.is_detecting:
-            # Capture frame from Pi Camera
-            frame = self.picam2.capture_array()
+        try:
+            # Initialize Pi Camera
+            self.picam2 = Picamera2()
             
-            # Convert to grayscale for face detection
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+            # Wait a moment for the camera to initialize
+            time.sleep(1)
             
-            # Draw rectangle around faces and show distance
-            for (x, y, w, h) in faces:
-                # Calculate distance
-                distance = self.calculate_distance(w)
-                
-                # Draw rectangle
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                
-                # Add distance text
-                distance_text = f"Distance: {distance:.2f}m"
-                cv2.putText(frame, distance_text, (x, y-10),
-                          cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3)
+            # Configure camera
+            preview_config = self.picam2.create_preview_configuration(
+                main={"size": (640, 480)},
+                lores={"size": (320, 240), "format": "YUV420"}
+            )
+            self.picam2.configure(preview_config)
             
-            # Convert frame to PhotoImage
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
+            # Start camera
+            self.picam2.start()
+            time.sleep(1)  # Give the camera time to start
             
-            # Update video label
-            self.video_label.configure(image=photo)
-            self.video_label.image = photo
+            self.is_detecting = True
             
-            # Update GUI
-            self.root.update()
-        
-        if self.picam2 is not None:
-            self.picam2.stop()
+            while self.is_detecting:
+                try:
+                    # Capture frame from Pi Camera
+                    frame = self.picam2.capture_array()
+                    
+                    # Convert to grayscale for face detection
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+                    
+                    # Draw rectangle around faces and show distance
+                    for (x, y, w, h) in faces:
+                        # Calculate distance
+                        distance = self.calculate_distance(w)
+                        
+                        # Draw rectangle
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                        
+                        # Add distance text
+                        distance_text = f"Distance: {distance:.2f}m"
+                        cv2.putText(frame, distance_text, (x, y-10),
+                                  cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3)
+                    
+                    # Convert frame to PhotoImage
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
+                    
+                    # Update video label
+                    self.video_label.configure(image=photo)
+                    self.video_label.image = photo
+                    
+                    # Update GUI
+                    self.root.update()
+                    
+                except Exception as e:
+                    print(f"Error in capture loop: {str(e)}")
+                    time.sleep(0.1)
+                    continue
+                    
+        except Exception as e:
+            messagebox.showerror("Camera Error", f"Failed to initialize camera: {str(e)}")
+            self.status_indicator.configure(text="OFFLINE", style="Red.TLabel")
+            self.is_detecting = False
+        finally:
+            if self.picam2 is not None:
+                self.picam2.stop()
     
     def stop_face_detection(self):
         self.is_detecting = False
