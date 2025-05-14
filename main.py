@@ -140,24 +140,6 @@ class BlackGUI:
                                  width=20)
         self.text_entry.pack(side="left")
         
-        # Make sure the entry widget is properly configured
-        self.text_entry.config(state='normal')
-        self.text_entry.delete(0, tk.END)
-        self.text_entry.focus_force()
-        
-        # Bind Enter key to check for ACTIVATE/DEACTIVATE
-        self.text_entry.bind('<Return>', self.check_activation)
-        self.root.bind('<Return>', self.check_activation)  # Bind to root window as well
-        
-        # Add a button to activate/deactivate as an alternative
-        self.activate_button = tk.Button(entry_frame,
-                                      text="Activate/Deactivate",
-                                      command=lambda: self.check_activation(None),
-                                      bg="black",
-                                      fg="white",
-                                      font=("Courier", 20))
-        self.activate_button.pack(side="left", padx=10)
-        
         # Create video frame
         self.video_frame = ttk.Frame(self.main_frame, style="Black.TFrame")
         self.video_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
@@ -165,6 +147,9 @@ class BlackGUI:
         # Create and configure video label
         self.video_label = tk.Label(self.video_frame, bg="black", width=80, height=30)  # Set size in text units
         self.video_label.pack(padx=10, pady=10, fill="both", expand=True)
+        
+        # Bind Enter key to check for ACTIVATE/DEACTIVATE
+        self.text_entry.bind('<Return>', self.check_activation)
         
         self.picam2 = None
     
