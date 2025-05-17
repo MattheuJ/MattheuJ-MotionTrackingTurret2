@@ -372,9 +372,9 @@ class BlackGUI:
     def send_threat_email(self):
         try:
             # Email configuration for Gmail
-            sender_email = "mattheujimenez@gmail.com"  # Your Gmail address
-            receiver_email = "mattheujimenez@gmail.com"  # Where to send the alert
-            password = "jtpf qrei viiy ccmu"  # Replace with your Gmail App Password
+            sender_email = "Placeholder"  # Your Gmail address
+            receiver_email = "Placeholder"  # Where to send the alert
+            password = "Placeholder"  # Replace with your Gmail App Password
 
             # Create message
             msg = MIMEMultipart()
